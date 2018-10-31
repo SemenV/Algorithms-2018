@@ -2,6 +2,9 @@ package lesson1;
 
 import kotlin.NotImplementedError;
 
+import java.io.*;
+import java.util.*;
+
 @SuppressWarnings("unused")
 public class JavaTasks {
     /**
@@ -96,10 +99,23 @@ public class JavaTasks {
      * 99.5
      * 121.3
      */
+    // O(n log(n))
     static public void sortTemperatures(String inputName, String outputName) {
-        throw new NotImplementedError();
-    }
+        try {
+            PriorityQueue<Double> priorQueue = new PriorityQueue();
+            Scanner read = new Scanner(new InputStreamReader(new FileInputStream(new File(inputName))));
+            while (read.hasNext()) {
+                priorQueue.add(Double.parseDouble(read.next()));
+            }
 
+            FileWriter writer = new FileWriter(new File(outputName));
+            while (!priorQueue.isEmpty()) {
+                writer.write(priorQueue.poll() + "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+        }
+    }
     /**
      * Сортировка последовательности
      *
@@ -130,7 +146,53 @@ public class JavaTasks {
      * 2
      */
     static public void sortSequence(String inputName, String outputName) {
-        throw new NotImplementedError();
+        try {
+            Scanner read = new Scanner(new InputStreamReader(new FileInputStream(new File(inputName))));
+            if (!read.hasNext()) return;
+
+            List<Integer> values = new ArrayList<>();
+            Map<Integer, Integer> enterCount = new HashMap<>();
+
+            Integer first = Integer.parseInt(read.next());
+            values.add(first);
+            enterCount.put(first, 1);
+
+            Integer countPop = 1;
+            Integer mostPop = first;
+
+            while (read.hasNext()) {
+                Integer current = Integer.parseInt(read.next());
+                values.add(current);
+
+                if (!enterCount.containsKey(current)) {
+                    enterCount.put(current, 1);
+                } else {
+                    Integer currentCount = enterCount.get(current) + 1;
+                    enterCount.put(current, currentCount);
+
+                    if (currentCount > countPop) {
+                        countPop = currentCount;
+                        mostPop = current;
+                    }
+
+                    if (currentCount == countPop && mostPop > current) {
+                        mostPop = current;
+                    }
+
+                }
+            }
+            FileWriter writer = new FileWriter(new File(outputName));
+            for (Integer i : values) {
+                if (!i.equals(mostPop)) {
+                    writer.write(i + "\n");
+                }
+            }
+            for (Integer i : Collections.nCopies(countPop, mostPop)) {
+                writer.write(i + "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+        }
     }
 
     /**
