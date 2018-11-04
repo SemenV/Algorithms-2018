@@ -3,7 +3,11 @@ package lesson2;
 import kotlin.NotImplementedError;
 import kotlin.Pair;
 
-import java.util.Set;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class JavaAlgorithms {
@@ -96,8 +100,23 @@ public class JavaAlgorithms {
      * Если имеется несколько самых длинных общих подстрок одной длины,
      * вернуть ту из них, которая встречается раньше в строке first.
      */
-    static public String longestCommonSubstring(String firs, String second) {
-        throw new NotImplementedError();
+    static public String longestCommonSubstring(String first, String second) {
+        String result = "";
+        for (int i = 0; i < first.length(); i++) {
+            for (int j = 0; j < second.length(); j++) {
+                if (first.charAt(i) == second.charAt(j)) {
+                    StringBuilder pseudoResult = new StringBuilder();
+                    //check diagonal
+                    for (int k = 0; i + k < first.length() && j + k < second.length() && first.charAt(i + k) == second.charAt(j + k); k++) {
+                        pseudoResult.append(first.charAt(i + k));
+                    }
+                    if (pseudoResult.length() > result.length()) {
+                        result = pseudoResult.toString();
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -141,6 +160,73 @@ public class JavaAlgorithms {
      * Остальные символы ни в файле, ни в словах не допускаются.
      */
     static public Set<String> baldaSearcher(String inputName, Set<String> words) {
-        throw new NotImplementedError();
+        try {
+            Scanner read = new Scanner(new InputStreamReader(new FileInputStream(new File(inputName))));
+            List<List<String>> field = new ArrayList<>();
+
+            while (read.hasNext()) {
+                List k = Arrays.asList(read.nextLine().split(" "));
+                System.out.println(k);
+                field.add(k);
+            }
+
+            Set wordsExist = new HashSet();
+            for (String word : words) {
+                for (int i = 0; i < field.size(); i++) {
+                    List<String> currentArr = field.get(i);
+                    for (int j = 0; j < currentArr.size(); j++) {
+                        if (word.startsWith(field.get(i).get(j))) {
+                            if (search(i, j, word, field)) wordsExist.add(word);
+                        }
+                    }
+                }
+            }
+            return wordsExist;
+        } catch (IOException e) {
+            System.out.println("IOException");
+        }
+        return new TreeSet();
+    }
+
+    static public boolean search(int i, int j, String word, List<List<String>> field) {
+        List<String> wordArr = Arrays.asList(word.split(""));
+        HashSet<Pair<Integer, Integer>> positions = new HashSet();
+        positions.add(new Pair<>(i, j));
+
+        HashSet<Pair<Integer, Integer>> newPos = new HashSet<>();
+        for (int k = 1; k < word.length(); k++) {
+            int currK = k;
+            newPos.clear();
+            for (Pair<Integer, Integer> elem : positions) {
+                newPos.addAll(getSteps(elem, field.size(), field.get(0).size()));
+            }
+
+            Iterator iter =  newPos.iterator();
+            while (iter.hasNext()){
+                Pair<Integer, Integer>  elem = (Pair<Integer, Integer>) iter.next();
+                String elemInField = field.get(elem.getFirst()).get(elem.getSecond());
+                if (!elemInField.equals(word.charAt(currK) + "")) iter.remove();
+                if (currK == word.length() - 1 &&
+                        elemInField.equals(word.charAt(word.length() - 1) + "")) return true;
+            }
+            positions.clear();
+            positions.addAll(newPos);
+        }
+        return false;
+    }
+
+
+    static public Set<Pair<Integer, Integer>> getSteps(Pair<Integer, Integer> e, Integer limitH, Integer limitW) {
+        Set<Pair<Integer, Integer>> end = new HashSet<>();
+        end.add(new Pair(e.getFirst() + 1, e.getSecond()));
+        end.add(new Pair(e.getFirst() - 1, e.getSecond()));
+        end.add(new Pair(e.getFirst(), e.getSecond() + 1));
+        end.add(new Pair(e.getFirst(), e.getSecond() - 1));
+        end.removeIf(k -> !isInside(k, limitH, limitW));
+        return end;
+    }
+
+    static public boolean isInside(Pair<Integer, Integer> e, Integer limitH, Integer limitW) {
+        return e.getFirst() < limitH   && e.getSecond() < limitW  && e.getFirst() >= 0 && e.getSecond() >= 0;
     }
 }
