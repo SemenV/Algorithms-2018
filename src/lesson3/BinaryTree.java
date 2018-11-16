@@ -24,10 +24,6 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
 
     private Node<T> root = null;
 
-    public Node<T> getRoot() {
-        return root;
-    }
-
     private int size = 0;
 
     @Override
@@ -174,19 +170,15 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
      */
 
     /*
-     Решил что так тк при создании ищу новый root и это использует ресурсы
-     n - кол во элементов до ближайшего (для toElement & fromElement) общего узла.
-     m - кол - во элементов между toElement & fromElement (для задания size)
+     m - кол-во элементов в новом поддереве (из-за нач. иниц. size)
+     O(n) - из-за вызова defineGenNode (n - самая большая ветка (худший случий))
      Трудоёмкость: O(n + m)
-     Ресурсоёмкость: O(1)
-     Если toElement справа от root || fromElemnt слева от root
-     Трудоёмкость: O(m)
      Ресурсоёмкость: O(1)
      */
     @NotNull
     @Override
     public SortedSet<T> subSet(T fromElement, T toElement) {
-        return new BinarySubTree(this, fromElement, toElement,true);
+        return new BinarySubTree(defineGenNode(root,fromElement,toElement), fromElement, toElement,true);
     }
 
 
@@ -194,19 +186,12 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
      * Найти множество всех элементов меньше заданного
      * Сложная
      */
-    /*
-     n - кол во элементов до toElement
-     m - кол во меньших toElement
-     Трудоёмкость: O(n + m)
-     Ресурсоёмкость: O(1)
-     Если toElement справа от root
-     Трудоёмкость: O(m)
-     Ресурсоёмкость: O(1)
-     */
+
+    //см subSet
     @NotNull
     @Override
     public SortedSet<T> headSet(T toElement) {
-        return new BinarySubTree(this, null, toElement,false);
+        return new BinarySubTree(defineGenNode(root,null,toElement), null, toElement,false);
     }
 
 
@@ -214,19 +199,12 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
      * Найти множество всех элементов больше или равных заданного
      * Сложная
      */
-    /*
-     n - кол во элементов после fromElement
-     m - кол во больших fromElement
-     Трудоёмкость: O(n + m)
-     Ресурсоёмкость: O(1)
-     Если toElement справа от root
-     Трудоёмкость: O(m)
-     Ресурсоёмкость: O(1)
-     */
+
+    //см subSet
     @NotNull
     @Override
     public SortedSet<T> tailSet(T fromElement) {
-        return new BinarySubTree(this, fromElement, null,true);
+        return new BinarySubTree(defineGenNode(root,fromElement,null), fromElement, null,true);
     }
 
     @Override
@@ -248,17 +226,16 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         }
         return current.value;
     }
-}
 
-class BinarySubTree<V extends Comparable<V>> extends BinaryTree<V> {
-    private Node<V> root;
-    V fromElement, toElement;
-    boolean containsEdge;
-    int size;
 
-    public BinarySubTree(BinaryTree<V> tree, V fromElement, V toElement, boolean containsEdge) {
-        Node<V> tempRoot = tree.getRoot();
-
+    /*
+     n - самая большая ветка (худший случий)
+     Трудоёмкость: O(n)
+     Ресурсоёмкость: O(1)
+     */
+    //find root node using toElement & fromElement
+    private Node<T> defineGenNode(Node<T> start, T fromElement, T toElement) {
+        Node<T> tempRoot = root;
 
         if (fromElement == null && toElement.compareTo(tempRoot.value) < 0)
             tempRoot = findGenNode(tempRoot, toElement, toElement);
@@ -267,18 +244,12 @@ class BinarySubTree<V extends Comparable<V>> extends BinaryTree<V> {
         }
 
         if (toElement != null && fromElement != null)
-            tempRoot = findGenNode(tempRoot,fromElement,toElement);
-
-        this.root = tempRoot;
-        this.fromElement = fromElement;
-        this.toElement = toElement;
-        this.containsEdge = containsEdge;
-        this.size = countSize(this.root);
+            tempRoot = findGenNode(tempRoot, fromElement, toElement);
+        return tempRoot;
     }
 
-
     //find nearest general node between toElement & fromElement
-    private Node<V> findGenNode(Node<V> start, V fromElement, V toElement) {
+    private Node<T> findGenNode(Node<T> start, T fromElement, T toElement) {
         if (fromElement.compareTo(start.value) < 0 && toElement.compareTo(start.value) < 0) {
             if (start.left == null) return start;
             return findGenNode(start.left, fromElement, toElement);
@@ -289,7 +260,23 @@ class BinarySubTree<V extends Comparable<V>> extends BinaryTree<V> {
         // when fromElement or toElement = start.value
         return start;
     }
+}
 
+
+
+class BinarySubTree<V extends Comparable<V>> extends BinaryTree<V> {
+    private Node<V> root;
+    V fromElement, toElement;
+    boolean containsEdge;
+    int size;
+
+    public BinarySubTree(Node<V> node, V fromElement, V toElement, boolean containsEdge) {
+        this.root = node;
+        this.fromElement = fromElement;
+        this.toElement = toElement;
+        this.containsEdge = containsEdge;
+        this.size = countSize(this.root);
+    }
 
     /*
      Трудоёмкость: O(1)
@@ -300,17 +287,16 @@ class BinarySubTree<V extends Comparable<V>> extends BinaryTree<V> {
                 (toElement == null || v.compareTo(toElement) < 0 || containsEdge && v.compareTo(toElement) == 0);
     }
 
-
     /*
-         n - кол во элементов после от НОВОГО root до листка
-         Трудоёмкость: O(n)
-         Ресурсоёмкость: O(1)
-         */
+    n - кол во элементов после от НОВОГО root до листка (в худшем случае)
+    Трудоёмкость: O(n)
+    Ресурсоёмкость: O(1)
+    */
     //переопределил для ускоренного поиска от нового root те find(this.root,t)
     @Override
     public boolean add(V t) {
         if (!isInside(t)) return false;
-        Node<V> closest = find(this.root,t);
+        Node<V> closest = super.find(this.root,t);
         int comparison = closest == null ? -1 : t.compareTo(closest.value);
         if (comparison == 0) {
             return false;
@@ -341,7 +327,7 @@ class BinarySubTree<V extends Comparable<V>> extends BinaryTree<V> {
         @SuppressWarnings("unchecked")
         V t = (V) o;
         if (this.root == null) throw new NoSuchElementException();
-        Node<V> closest = find(this.root,t);
+        Node<V> closest = super.find(this.root,t);
         return closest != null && t.compareTo(closest.value) == 0 && isInside((V) o);
     }
 
