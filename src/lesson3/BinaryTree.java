@@ -172,6 +172,17 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
      * Для этой задачи нет тестов (есть только заготовка subSetTest), но её тоже можно решить и их написать
      * Очень сложная
      */
+
+    /*
+     Решил что так тк при создании ищу новый root и это использует ресурсы
+     n - кол во элементов до ближайшего (для toElement & fromElement) общего узла.
+     m - кол - во элементов между toElement & fromElement (для задания size)
+     Трудоёмкость: O(n + m)
+     Ресурсоёмкость: O(1)
+     Если toElement справа от root || fromElemnt слева от root
+     Трудоёмкость: O(m)
+     Ресурсоёмкость: O(1)
+     */
     @NotNull
     @Override
     public SortedSet<T> subSet(T fromElement, T toElement) {
@@ -183,6 +194,15 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
      * Найти множество всех элементов меньше заданного
      * Сложная
      */
+    /*
+     n - кол во элементов до toElement
+     m - кол во меньших toElement
+     Трудоёмкость: O(n + m)
+     Ресурсоёмкость: O(1)
+     Если toElement справа от root
+     Трудоёмкость: O(m)
+     Ресурсоёмкость: O(1)
+     */
     @NotNull
     @Override
     public SortedSet<T> headSet(T toElement) {
@@ -193,6 +213,15 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
     /**
      * Найти множество всех элементов больше или равных заданного
      * Сложная
+     */
+    /*
+     n - кол во элементов после fromElement
+     m - кол во больших fromElement
+     Трудоёмкость: O(n + m)
+     Ресурсоёмкость: O(1)
+     Если toElement справа от root
+     Трудоёмкость: O(m)
+     Ресурсоёмкость: O(1)
      */
     @NotNull
     @Override
@@ -262,11 +291,21 @@ class BinarySubTree<V extends Comparable<V>> extends BinaryTree<V> {
     }
 
 
+    /*
+     Трудоёмкость: O(1)
+     Ресурсоёмкость: O(1)
+     */
     private boolean isInside(V v) {
         return (fromElement == null || v.compareTo(fromElement) > 0 || containsEdge && v.compareTo(fromElement) == 0) &&
                 (toElement == null || v.compareTo(toElement) < 0 || containsEdge && v.compareTo(toElement) == 0);
     }
 
+
+    /*
+         n - кол во элементов после от НОВОГО root до листка
+         Трудоёмкость: O(n)
+         Ресурсоёмкость: O(1)
+         */
     //переопределил для ускоренного поиска от нового root те find(this.root,t)
     @Override
     public boolean add(V t) {
@@ -291,6 +330,11 @@ class BinarySubTree<V extends Comparable<V>> extends BinaryTree<V> {
         return true;
     }
 
+    /*
+      n - кол во элементов после от НОВОГО root до листка (в худшем случае)
+      Трудоёмкость: O(n)
+      Ресурсоёмкость: O(1)
+      */
     //по той же пречине переопределил
     @Override
     public boolean contains(Object o) {
@@ -312,6 +356,10 @@ class BinarySubTree<V extends Comparable<V>> extends BinaryTree<V> {
         return currSize;
     }
 
+    /*
+      Трудоёмкость: O(1)
+      Ресурсоёмкость: O(1)
+      */
     @Override
     public int size() {
         return size;
