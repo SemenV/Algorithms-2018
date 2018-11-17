@@ -49,6 +49,25 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         return true;
     }
 
+    protected boolean addFrom(T t, Node<T> start) {
+        Node<T> closest = find(start,t);
+        int comparison = closest == null ? -1 : t.compareTo(closest.value);
+        if (comparison == 0) {
+            return false;
+        }
+        Node<T> newNode = new Node<>(t);
+        if (closest == null) {
+            root = newNode;
+        } else if (comparison < 0) {
+            assert closest.left == null;
+            closest.left = newNode;
+        } else {
+            assert closest.right == null;
+            closest.right = newNode;
+        }
+        return true;
+    }
+
     public boolean checkInvariant() {
         return root == null || checkInvariant(root);
     }
@@ -140,10 +159,6 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
     public void clear() {
         root = null;
         size = 0;
-    }
-
-    protected void addSize() {
-        size++;
     }
 
     @NotNull
@@ -268,14 +283,12 @@ class BinarySubTree<V extends Comparable<V>> extends BinaryTree<V> {
     private Node<V> root;
     V fromElement, toElement;
     boolean containsEdge;
-    int size;
 
     public BinarySubTree(Node<V> node, V fromElement, V toElement, boolean containsEdge) {
         this.root = node;
         this.fromElement = fromElement;
         this.toElement = toElement;
         this.containsEdge = containsEdge;
-        this.size = countSize(this.root);
     }
 
     /*
@@ -288,36 +301,20 @@ class BinarySubTree<V extends Comparable<V>> extends BinaryTree<V> {
     }
 
     /*
-    n - кол во элементов после от НОВОГО root до листка (в худшем случае)
+    n - кол во элементов после НОВОГО root до листка (в худшем случае)
     Трудоёмкость: O(n)
     Ресурсоёмкость: O(1)
     */
-    //переопределил для ускоренного поиска от нового root те find(this.root,t)
+    //addFrom для ускоренного поиска от нового root те find(this.root,t)
     @Override
     public boolean add(V t) {
         if (!isInside(t)) return false;
-        Node<V> closest = super.find(this.root,t);
-        int comparison = closest == null ? -1 : t.compareTo(closest.value);
-        if (comparison == 0) {
-            return false;
-        }
-        Node<V> newNode = new Node<>(t);
-        if (closest == null) {
-            root = newNode;
-        } else if (comparison < 0) {
-            assert closest.left == null;
-            closest.left = newNode;
-        } else {
-            assert closest.right == null;
-            closest.right = newNode;
-        }
-        this.size++;
-        addSize();
+        super.addFrom(t,this.root);
         return true;
     }
 
     /*
-      n - кол во элементов после от НОВОГО root до листка (в худшем случае)
+      n - кол во элементов после НОВОГО root до листка (в худшем случае)
       Трудоёмкость: O(n)
       Ресурсоёмкость: O(1)
       */
@@ -343,11 +340,12 @@ class BinarySubTree<V extends Comparable<V>> extends BinaryTree<V> {
     }
 
     /*
-      Трудоёмкость: O(1)
+      n - кол-во элементов в новом дереве
+      Трудоёмкость: O(n)
       Ресурсоёмкость: O(1)
       */
     @Override
     public int size() {
-        return size;
+        return countSize(this.root);
     }
 }
